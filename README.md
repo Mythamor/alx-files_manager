@@ -49,6 +49,6 @@ Enjoy!
 
 
 > Author:
-[Mithamo Beth](www.mithamo.tech)
+[Mithamo Beth](https://mithamo.tech)
 
 
