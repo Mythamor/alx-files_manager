@@ -8,18 +8,23 @@ class DBClient {
       DB_DATABASE = 'files_manager',
     } = process.env;
 
-    const url = `mongodb://${DB_HOST}:${DB_PORT}`;
-
-    this.client = new MongoClient(url, { useUnifiedTopology: true });
     this.host = DB_HOST;
     this.port = DB_PORT;
     this.database = DB_DATABASE;
+
+    const url = `mongodb://${this.host}:${this.port}`;
+
+    this.connected = false;
+    this.client = new MongoClient(url, { useUnifiedTopology: true });
+    this.client.connect().then(() => {
+      this.connected = true;
+    }).catch((err) => console.error(err.message));
   }
 
   // Returns true if connection is alive, else False
-  async isAlive() {
+  isAlive() {
     try {
-      await this.client.connect();
+      this.client.connect();
       return true;
     } catch (error) {
       console.error('MongoDB Connection Error:', error);
@@ -30,8 +35,8 @@ class DBClient {
   // Returns the number of documents in the collection users
   async nbUsers() {
     try {
+      await this.client.connect();
       const db = this.client.db(this.database);
-      await db.createCollection('users');
       const usersCollection = db.collection('users');
       const count = await usersCollection.countDocuments();
       return count;
