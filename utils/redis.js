@@ -6,7 +6,9 @@ class RedisClient {
 
     // Handle Refis client errors
     this.client.on('error', (err) => console.error('Redis Client Error', err));
-    this.client.connect();
+
+   // Handle the 'connect'
+   this.client.on('connect', () => console.log('Redis client connected'));
   }
 
   isAlive() {
@@ -40,7 +42,8 @@ class RedisClient {
   }
 
   async del(key) {
-    return new Promise((resolve) => {
+    // eslint-disable-next-line no-unused-vars
+    return new Promise((resolve, reject) => {
       this.client.del(key, (err, reply) => {
         if (err) {
           console.error('Redis DEL Error:', err);
