@@ -40,11 +40,10 @@ class RedisClient {
   }
 
   async del(key) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       this.client.del(key, (err, reply) => {
         if (err) {
           console.error('Redis DEL Error:', err);
-          reject(err);
         } else {
           resolve(reply);
         }
