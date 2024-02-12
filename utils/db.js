@@ -16,20 +16,20 @@ class DBClient {
 
     this.connected = false;
     this.client = new MongoClient(url, { useUnifiedTopology: true });
-    this.client.connect().then(() => {
-      this.connected = true;
-    }).catch((err) => console.error(err.message));
+
+    // Handle promise rejection
+    this.client.connect()
+      .then(() => {
+        this.connected = true;
+      })
+      .catch((err) => {
+        console.error(err.message);
+      });
   }
 
   // Returns true if connection is alive, else False
   isAlive() {
-    try {
-      this.client.connect();
-      return true;
-    } catch (error) {
-      console.error('MongoDB Connection Error:', error);
-      return false;
-    }
+    return this.connected;
   }
 
   // Returns the number of documents in the collection users
