@@ -7,8 +7,8 @@ class RedisClient {
     // Handle Refis client errors
     this.client.on('error', (err) => console.error('Redis Client Error', err));
 
-   // Handle the 'connect'
-   this.client.on('connect', () => console.log('Redis client connected'));
+    // Handle the 'connect'
+    this.client.on('connect', () => console.log('Redis client connected'));
   }
 
   isAlive() {
