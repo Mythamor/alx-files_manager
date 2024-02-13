@@ -1,4 +1,6 @@
 const { MongoClient } = require('mongodb');
+const mongo = require('mongodb');
+const { hashedPassword } = require('../controllers/UsersController');
 
 class DBClient {
   constructor() {
@@ -57,6 +59,65 @@ class DBClient {
       console.error('Error getting number of files:', error);
       throw error;
     }
+  }
+
+  // Creates a new user in the db
+  async createUser(email, password) {
+    try {
+      const hashedPwd = hashedPassword(password);
+      await this.client.connect();
+      const db = this.client.db(this.database);
+      const usersCollection = db.collection('users');
+      const user = await usersCollection.insertOne({ email, password: hashedPwd });
+      return user;
+    } catch (error) {
+      console.error('Error getting user by email:', error);
+      throw error;
+    }
+  }
+
+  // Gets users by email
+  async getUserByEmail(email) {
+    try {
+      await this.client.connect();
+      const db = this.client.db(this.database);
+      const usersCollection = db.collection('users');
+      const user = await usersCollection.find({ email }).toArray();
+      if (!user.length) {
+        return null;
+      }
+      return user[0];
+    } catch (error) {
+      console.error('Error getting user by email:', error);
+      throw error;
+    }
+  }
+
+  // Gets user by id
+  async getUserById(id) {
+    try {
+      const userId = new mongo.ObjectID(id);
+      await this.client.connect();
+      const db = this.client.db(this.database);
+      const usersCollection = db.collection('users');
+      const user = await usersCollection.find({ userId }).toArray();
+      if (!user.length) {
+        return null;
+      }
+      return user[0];
+    } catch (error) {
+      console.error('Error getting user by email:', error);
+      throw error;
+    }
+  }
+
+  // Check if user exists in the db
+  async userExist(email) {
+    const user = await this.getUser(email);
+    if (user) {
+      return true;
+    }
+    return false;
   }
 }
 
