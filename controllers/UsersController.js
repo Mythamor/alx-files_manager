@@ -1,50 +1,40 @@
-const sha1 = require('sha1');
-const dbClient = require('../utils/db');
+/* eslint-disable import/no-named-as-default */
+import sha1 from 'sha1';
+import Queue from 'bull/lib/queue';
+import dbClient from '../utils/db';
 
-// Hash the password with SHA1
-export const hashedPassword = (password) => sha1(password);
+const userQueue = new Queue('email sending');
 
-// Define the req body
-export const getAuthHeader = (req) => {
-  const header = req.headers.authorization;
-  if (!header) {
-    return null;
-  }
-  return header;
-};
-
-class UsersController {
+export default class UsersController {
   static async postNew(req, res) {
-    const { email, password } = req.body;
+    const email = req.body ? req.body.email : null;
+    const password = req.body ? req.body.password : null;
 
-    // Check if email and password are provided
     if (!email) {
       res.status(400).json({ error: 'Missing email' });
-      res.end();
       return;
     }
     if (!password) {
       res.status(400).json({ error: 'Missing password' });
-      res.end();
       return;
     }
+    const user = await (await dbClient.usersCollection()).findOne({ email });
 
-    // Check if the email already exists
-    const existingUser = await dbClient.userExist(email);
-    if (existingUser) {
-      res.status(400).json({ error: 'Already exist ' });
-      res.end();
+    if (user) {
+      res.status(400).json({ error: 'Already exist' });
       return;
     }
+    const insertionInfo = await (await dbClient.usersCollection())
+      .insertOne({ email, password: sha1(password) });
+    const userId = insertionInfo.insertedId.toString();
 
-    // Create a new user obj
-    const newUser = await dbClient.createUser(email, password);
-    const userId = `${newUser.insertedId}`;
+    userQueue.add({ userId });
+    res.status(201).json({ email, id: userId });
+  }
 
-    // Return the new user with email and id
-    res.status(201).json({ userId, email });
-    res.end();
+  static async getMe(req, res) {
+    const { user } = req;
+
+    res.status(200).json({ email: user.email, id: user._id.toString() });
   }
 }
-
-module.exports = UsersController;

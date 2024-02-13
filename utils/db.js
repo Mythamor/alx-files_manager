@@ -82,11 +82,8 @@ class DBClient {
       await this.client.connect();
       const db = this.client.db(this.database);
       const usersCollection = db.collection('users');
-      const user = await usersCollection.find({ email }).toArray();
-      if (!user.length) {
-        return null;
-      }
-      return user[0];
+      const user = await usersCollection.findOne({ email });
+      return user;
     } catch (error) {
       console.error('Error getting user by email:', error);
       throw error;
@@ -113,11 +110,19 @@ class DBClient {
 
   // Check if user exists in the db
   async userExist(email) {
-    const user = await this.getUser(email);
+    const user = await this.getUserByEmail(email);
     if (user) {
       return true;
     }
     return false;
+  }
+
+  async usersCollection() {
+    return this.client.db().collection('users');
+  }
+
+  async filesCollection() {
+    return this.client.db().collection('files');
   }
 }
 
