@@ -13,23 +13,28 @@ export const getAuthHeader = (req) => {
   return header;
 };
 
-const UsersController = {
-  postNew: async (req, res) => {
-    try {
+class UsersController {
+  static async postNew(req, res) {
       const { email, password } = req.body;
 
       // Check if email and password are provided
       if (!email) {
-        return res.status(400).json({ error: 'Missing email' });
+        res.status(400).json({ error: 'Missing email' });
+	res.end();
+	return;
       }
       if (!password) {
-        return res.status(400).json({ error: 'Missing password' });
+        res.status(400).json({ error: 'Missing password' });
+	res.end();
+	return;
       }
 
       // Check if the email already exists
       const existingUser = await dbClient.userExist(email);
       if (existingUser) {
-        return res.status(400).json({ error: 'Already exist ' });
+        res.status(400).json({ error: 'Already exist ' });
+	res.end();
+	return;
       }
 
       // Create a new user obj
@@ -38,11 +43,8 @@ const UsersController = {
 
       // Return the new user with email and id
       return res.status(201).json({ userId, email });
-    } catch (error) {
-      console.error('Error creating user:', error);
-      return res.status(500).json({ error: 'Internal Server Error ' });
-    }
-  },
+      res.end();
+  }
 };
 
 module.exports = UsersController;
